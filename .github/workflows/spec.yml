@@ -1,0 +1,18 @@
+name: spec
+on: workflow_dispatch
+jobs:
+  spec:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macos-15, macos-26]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: |
+          echo "== OS"; sw_vers; uname -m
+          echo "== CPU"; sysctl -n machdep.cpu.brand_string; sysctl -n hw.ncpu hw.physicalcpu hw.perflevel0.physicalcpu hw.perflevel1.physicalcpu 2>/dev/null
+          echo "== MEM"; echo "$(( $(sysctl -n hw.memsize) / 1024 / 1024 / 1024 )) GiB"
+          echo "== MODEL"; sysctl -n hw.model; system_profiler SPHardwareDataType | grep -E "Model|Chip|Cores|Memory" || true
+          echo "== DISK"; df -h / /System/Volumes/Data; diskutil info / | grep -E "Disk Size|Container Total|Container Free|Volume Free" || true
+          echo "== XCODE"; ls -d /Applications/Xcode*.app | wc -l; du -sh /Applications 2>/dev/null || true
+          echo "== SIM"; du -sh /Library/Developer/CoreSimulator 2>/dev/null || true
